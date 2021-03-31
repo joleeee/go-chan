@@ -18,9 +18,6 @@ import (
 	"path/filepath"
 )
 
-var pre string = "<!DOCTYPE html><html><body>"
-var post string = "</body></html>"
-
 var db *nutsdb.DB
 func getId() int64{
 	var id int64
@@ -234,14 +231,6 @@ func postsHandler(c echo.Context) (err error){
 		oot := getThreads()
 		s := "threadlist<br>"
 		for _, e := range oot {
-			//network := bytes.NewBuffer(e.Value)
-			//dec := gob.NewDecoder(network)
-			//var t Message
-			//err := dec.Decode(&t)
-			//if err != nil{
-				//log.Fatal(err)
-			//}
-			//s2 := fmt.Sprintf("<a href=\"posts/%s\">%s</a>&emsp;%s&emsp;%s<br>", string(e.Key), string(e.Key), t.Name, t.Subject)
 			s2 := fmt.Sprintf("<a href=\"posts/%s\">%s</a><br>", e, e)
 			s += s2
 		}
