@@ -78,46 +78,51 @@ func Thread(c echo.Context) (err error){
 	return c.HTML(http.StatusOK, thread.String())
 }
 
-func NewPost(c echo.Context) (err error){
-	name := c.FormValue("name")
-	reply := c.FormValue("reply")
-	subject := c.FormValue("subject")
-	content := c.FormValue("message")
-
+func writeFile(c echo.Context, id int64, filename string) (string, error){
 	// get file
-	file, err := c.FormFile("file")
+	file, err := c.FormFile(filename)
 	if err != nil{
-		return err
+		return "", err
 	}
 	src, err := file.Open()
 	if err != nil{
-		return err
+		return "", err
 	}
 	defer src.Close()
 
-	// get id (don't get id before we know we can read file)
-	id, err := mdb.GetId()
-	if err != nil {
-		return err
-	}
 	ext := filepath.Ext(file.Filename)
 	idstr := fmt.Sprintf("img/%08d%s", id, ext)
 
 	// write file
 	dst, err := os.Create(idstr)
 	if err != nil {
-		return err
+		return "", err
 	}
 	defer dst.Close()
 
 	if _, err = io.Copy(dst, src); err != nil {
+		return "", err
+	}
+
+	return "/"+idstr, nil
+}
+
+func NewPost(c echo.Context) (err error){
+	name := c.FormValue("name")
+	reply := c.FormValue("reply")
+	subject := c.FormValue("subject")
+	content := c.FormValue("message")
+
+	// get id (would be better after checking file...)
+	id, err := mdb.GetId()
+	if err != nil {
 		return err
 	}
 
-	t := time.Now()
-	tstr := t.Format("2006-01-02 15:04:05 -0700 MST")
-	fmt.Println("time is", tstr)
-	msg := data.Message{Subject: subject, Name: name, Content: content, Time: tstr, Url: "/"+idstr}
+	url, _ := writeFile(c, id, "file")
+
+	tstr := time.Now().Format("2006-01-02 15:04:05 -0700 MST")
+	msg := data.Message{Subject: subject, Name: name, Content: content, Time: tstr, Url: url}
 	// sanitze, make sure that reply id is a real id
 	pid, err := strconv.ParseInt(reply, 10, 64)
 	if err != nil {
