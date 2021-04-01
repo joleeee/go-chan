@@ -41,8 +41,18 @@ func ThreadList(c echo.Context) (err error){
 		}
 		s := "<h2>threadlist</h2>"
 		for _, e := range oot {
-			s2 := fmt.Sprintf("<a href=\"threads/%s\">%s</a><br>", e, e)
-			s += s2
+			id, err := strconv.ParseInt(e, 10, 64)
+			if err != nil {
+				// this should never happen!
+				return err
+			}
+			msg, err := mdb.GetPost(id)
+
+			var post bytes.Buffer
+			templ, _ := template.ParseFiles("templates/post.html")
+			templ.Execute(&post, msg)
+
+			s += post.String()
 		}
 
 		var body bytes.Buffer
@@ -66,7 +76,7 @@ func Thread(c echo.Context) (err error){
 	}
 
 	posts := ""
-	for _, e := range a{
+	for idx, e := range a{
 		id, err := strconv.ParseInt(e, 10, 64)
 		if err != nil {
 			return err
@@ -77,6 +87,11 @@ func Thread(c echo.Context) (err error){
 		}
 		var post bytes.Buffer
 		templ, _ := template.ParseFiles("templates/post.html")
+		idlink := nr
+		if idx > 0 {
+			idlink += "#p"+fmt.Sprintf("%d",id)
+		}
+
 		templ.Execute(&post, msg)
 
 		posts += post.String()
@@ -162,7 +177,7 @@ func NewPost(c echo.Context) (err error){
 	}
 
 	tstr := time.Now().Format("2006-01-02 15:04:05 -0700 MST")
-	msg := data.Message{Subject: subject, Name: name, Content: content, Time: tstr, Url: url}
+	msg := data.Message{Id: id, ParentId: pid, Subject: subject, Name: name, Content: content, Time: tstr, Url: url}
 	mdb.NewPost(id,pid,msg)
 
 	ret := fmt.Sprintf("Thread: Creating new thread no%d *%s* by *%s* with content *%s*\n", id, subject, name, content)

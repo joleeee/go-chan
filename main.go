@@ -46,7 +46,7 @@ func main(){
 	e.Static("/", "sauce")
 	e.Static("/img", "img")
 	e.GET("/", handlers.Root)
-	e.GET("/threads", handlers.ThreadList)
+	e.GET("/threads/", handlers.ThreadList)
 	e.GET("/threads/:data", handlers.Thread)
 	e.POST("/threads/newthread", handlers.NewPost)
 

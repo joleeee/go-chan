@@ -1,10 +1,11 @@
 <hr>
-<div class="post">
+<div id="p{{.Id}}" class="post">
 	<span class="titlebar">
 		<span class="subject">{{.Subject}}</span>
 		&thinsp;
 		<span class="author">{{.Name}}</span>
 		<time class="posttime">{{.Time}}</time>
+		<a href="{{.ParentId}}#p{{.Id}}"><span class="id">{{printf "%08d" .Id}}</span></a>
 	</span>
 	<br>
 	<a href="{{.Url}}">

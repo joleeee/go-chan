@@ -96,6 +96,8 @@ func (m *MDB) InitId() error {
 }
 
 type Message struct {
+	Id int64
+	ParentId int64
 	Name string
 	Subject string
 	Content string
