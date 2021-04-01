@@ -17,7 +17,7 @@ func New(db *nutsdb.DB) MDB{
 	return MDB{db:db}
 }
 
-func (m *MDB) GetId() int64{
+func (m *MDB) GetId() (int64, error) {
 	var id int64
 
 	// get id
@@ -39,7 +39,7 @@ func (m *MDB) GetId() int64{
 		}
 		return nil
 	}); err != nil {
-		log.Fatal(err)
+		return -1, err
 	}
 
 	//set id
@@ -54,11 +54,11 @@ func (m *MDB) GetId() int64{
 			}
 			return nil
 	}); err != nil {
-		log.Fatal(err)
+		return -1, err
 	}
 
 	fmt.Println("id is", id)
-	return id
+	return id, nil
 }
 
 func (m *MDB) InitId() error {
@@ -101,12 +101,13 @@ type Message struct {
 	Content string
 }
 
-func (m *MDB) message(id int64, parent int64, msg Message){
+func (m *MDB) message(id int64, parent int64, msg Message) error{
 	var network bytes.Buffer
 	enc := gob.NewEncoder(&network)
 	err := enc.Encode(msg)
 	if err != nil {
-		log.Fatal(err)
+		log.Print(err)
+		return err
 	}
 	// add post
 	if err := m.db.Update(
@@ -119,7 +120,8 @@ func (m *MDB) message(id int64, parent int64, msg Message){
 			}
 			return nil
 	}); err != nil {
-		log.Fatal(err)
+		log.Print(err)
+		return err
 	}
 	// add post as child
 	if err := m.db.Update(
@@ -129,18 +131,29 @@ func (m *MDB) message(id int64, parent int64, msg Message){
 			val := []byte(fmt.Sprintf("%d", id))
 			return tx.RPush(bucket, key, val)
 	}); err != nil {
-		log.Fatal(err)
+		log.Print(err)
+		return err
 	}
+
+	return nil
 }
 
-func (m *MDB) NewPost(id int64, pid int64, msg Message){
-	m.message(id, pid, msg)
-	if id == pid {
-		m.thread(id)
+func (m *MDB) NewPost(id int64, pid int64, msg Message) error {
+	err := m.message(id, pid, msg)
+	if err != nil {
+		return err
 	}
+	if id == pid { // threads are children of themselves
+		err := m.thread(id)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
 }
 
-func (m *MDB) GetPost(id int64) Message {
+func (m *MDB) GetPost(id int64) (Message, error) {
 	var msg Message
 	if err := m.db.View(
 	func(tx *nutsdb.Tx) error{
@@ -153,17 +166,18 @@ func (m *MDB) GetPost(id int64) Message {
 			dec := gob.NewDecoder(network)
 			err := dec.Decode(&msg)
 			if err != nil{
-				log.Fatal(err)
+				return err
 			}
 		}
 		return nil
 	}); err != nil {
-		log.Fatal(err)
+		log.Print(err)
+		return msg, err
 	}
-	return msg
+	return msg, nil
 }
 
-func (m *MDB) thread(id int64){
+func (m *MDB) thread(id int64) error {
 	fmt.Printf("add %d to threadlist\n", id)
 	if err := m.db.Update(
 		func(tx *nutsdb.Tx) error {
@@ -172,12 +186,15 @@ func (m *MDB) thread(id int64){
 			val := []byte(fmt.Sprintf("%d", id))
 			return tx.RPush(bucket, key, val)
 	}); err != nil {
-		log.Fatal(err)
+		log.Print(err)
+		return err
 	}
+	return nil
 }
 
-func (m *MDB) GetThreads() []string {
+func (m *MDB) GetThreads() ([]string, error) {
 	var entr [][]byte
+	var list []string
 	if err := m.db.View(
 		func(tx *nutsdb.Tx) error {
 			bucket := "threads"
@@ -189,13 +206,13 @@ func (m *MDB) GetThreads() []string {
 			}
 			return nil
 		}); err != nil {
-			log.Fatal(err)
+			log.Print(err)
+			return list, err
 		}
-	var list []string
 	for _, e := range entr {
 		list = append(list, string(e))
 	}
-	return list
+	return list, nil
 }
 
 func (m *MDB) GetThreadPosts(thread string) ([]string, error) {

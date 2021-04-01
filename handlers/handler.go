@@ -10,7 +10,6 @@ import (
 	"fmt"
 	"strconv"
 	"github.com/joleeee/go-chan/data"
-	"log"
 	"html/template"
 	"bytes"
 )
@@ -29,7 +28,10 @@ func ThreadList(c echo.Context) (err error){
 	format := c.QueryParam("format")
 
 	if format == "" {
-		oot := mdb.GetThreads()
+		oot, err := mdb.GetThreads()
+		if err != nil {
+			return err
+		}
 		s := "threadlist<br>"
 		for _, e := range oot {
 			s2 := fmt.Sprintf("<a href=\"threads/%s\">%s</a><br>", e, e)
@@ -55,9 +57,12 @@ func Thread(c echo.Context) (err error){
 	for _, e := range a{
 		id, err := strconv.ParseInt(e, 10, 64)
 		if err != nil {
-			log.Fatal(err)
+			return err
 		}
-		msg := mdb.GetPost(id)
+		msg, err := mdb.GetPost(id)
+		if err != nil{
+			return err
+		}
 		var post bytes.Buffer
 		templ, _ := template.ParseFiles("templates/post.html")
 		templ.Execute(&post, msg)
@@ -78,6 +83,7 @@ func NewPost(c echo.Context) (err error){
 	subject := c.FormValue("subject")
 	content := c.FormValue("message")
 
+	// get file
 	file, err := c.FormFile("file")
 	if err != nil{
 		return err
@@ -88,10 +94,15 @@ func NewPost(c echo.Context) (err error){
 	}
 	defer src.Close()
 
-	id := mdb.GetId()
+	// get id (don't get id before we know we can read file)
+	id, err := mdb.GetId()
+	if err != nil {
+		return err
+	}
 	ext := filepath.Ext(file.Filename)
 	idstr := fmt.Sprintf("%08d%s", id, ext)
 
+	// write file
 	dst, err := os.Create(idstr)
 	if err != nil {
 		return err
