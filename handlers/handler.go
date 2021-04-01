@@ -22,7 +22,7 @@ func Init(datab *nutsdb.DB){
 }
 
 func Root(c echo.Context) (err error){
-	s := "front page bla bla bla be nice etc<br>recent posts:"
+	s := "<h2>NOchan - the front page of the shitternet.</h2>"
 
 	var body bytes.Buffer
 	tempb, _ := template.ParseFiles("templates/body.html")
@@ -39,7 +39,7 @@ func ThreadList(c echo.Context) (err error){
 		if err != nil {
 			return err
 		}
-		s := "<h2>threadlist</h2>"
+		s := "<h2>Threadlist</h2>"
 		for _, e := range oot {
 			id, err := strconv.ParseInt(e, 10, 64)
 			if err != nil {
@@ -67,8 +67,17 @@ func ThreadList(c echo.Context) (err error){
 	}
 }
 
+type threadArgs struct {
+	Id int64
+	Content template.HTML
+}
 func Thread(c echo.Context) (err error){
 	nr := c.Param("data")
+	id, err := strconv.ParseInt(nr, 10, 64)
+	if err != nil {
+		// shouldn't happen
+		return err
+	}
 
 	a, err := mdb.GetThreadPosts(nr)
 	if err != nil {
@@ -99,7 +108,7 @@ func Thread(c echo.Context) (err error){
 
 	var thread bytes.Buffer
 	tempt, _ := template.ParseFiles("templates/thread.html")
-	tempt.Execute(&thread, template.HTML(posts))
+	tempt.Execute(&thread, threadArgs{Id:id, Content:template.HTML(posts)})
 
 	var body bytes.Buffer
 	tempb, _ := template.ParseFiles("templates/body.html")
