@@ -41,10 +41,9 @@ func main(){
 
 	e.Static("/", "sauce")
 	e.GET("/", handlers.Root)
-	e.GET("/posts", handlers.Posts)
-	e.GET("/posts/:data", handlers.Post)
-	e.POST("/posts/newpost", handlers.NewPost)
-	e.POST("/posts/newthread", handlers.NewThread)
+	e.GET("/threads", handlers.ThreadList)
+	e.GET("/threads/:data", handlers.Thread)
+	e.POST("/threads/newthread", handlers.NewPost)
 
 	e.Logger.Fatal(e.Start("localhost:4242"))
 }

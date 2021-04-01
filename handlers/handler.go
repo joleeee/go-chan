@@ -25,14 +25,14 @@ func Root(c echo.Context) (err error){
 	return c.String(http.StatusOK, "hello");
 }
 
-func Posts(c echo.Context) (err error){
+func ThreadList(c echo.Context) (err error){
 	format := c.QueryParam("format")
 
 	if format == "" {
 		oot := mdb.GetThreads()
 		s := "threadlist<br>"
 		for _, e := range oot {
-			s2 := fmt.Sprintf("<a href=\"posts/%s\">%s</a><br>", e, e)
+			s2 := fmt.Sprintf("<a href=\"threads/%s\">%s</a><br>", e, e)
 			s += s2
 		}
 		return c.HTML(http.StatusOK, s)
@@ -43,7 +43,7 @@ func Posts(c echo.Context) (err error){
 	}
 }
 
-func Post(c echo.Context) (err error){
+func Thread(c echo.Context) (err error){
 	nr := c.Param("data")
 
 	a, err := mdb.GetThreadPosts(nr)
@@ -73,16 +73,6 @@ func Post(c echo.Context) (err error){
 }
 
 func NewPost(c echo.Context) (err error){
-	thread := c.QueryParam("thread")
-	name := c.QueryParam("name")
-	subject := c.QueryParam("subject")
-	message := c.QueryParam("message")
-
-	ret := fmt.Sprintf("Post: Replying to %s: *%s* by *%s* with content *%s*\n", thread, subject, name, message)
-	return c.String(http.StatusOK, ret)
-}
-
-func NewThread(c echo.Context) (err error){
 	name := c.FormValue("name")
 	reply := c.FormValue("reply")
 	subject := c.FormValue("subject")
@@ -112,13 +102,11 @@ func NewThread(c echo.Context) (err error){
 		return err
 	}
 
+	fmt.Println("a")
 	msg := data.Message{Subject: subject, Name: name, Content: content}
 	// sanitze, make sure that reply id is a real id
 	pid, err := strconv.ParseInt(reply, 10, 64)
 	if err != nil {
-		log.Fatal(pid)
-	}
-	if reply == "" {
 		pid = id
 	}
 	mdb.NewPost(id,pid,msg)
