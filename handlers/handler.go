@@ -11,6 +11,8 @@ import (
 	"strconv"
 	"github.com/joleeee/go-chan/data"
 	"log"
+	"html/template"
+	"bytes"
 )
 
 var db *nutsdb.DB
@@ -44,7 +46,10 @@ func Posts(c echo.Context) (err error){
 func Post(c echo.Context) (err error){
 	nr := c.Param("data")
 
-	a := mdb.GetThreadPosts(nr)
+	a, err := mdb.GetThreadPosts(nr)
+	if err != nil {
+		return c.String(http.StatusNotFound, "not found")
+	}
 
 	s := ""
 	for _, e := range a{
@@ -53,23 +58,18 @@ func Post(c echo.Context) (err error){
 			log.Fatal(err)
 		}
 		msg := mdb.GetPost(id)
-		post := fmt.Sprintf(`
-		<hr> 
-		<div class="post">
-			<span class="titlebar">
-				<span class="author">
-					%s
-				</span>
-			</span>	
-			<br>
-			<span class="postcontent">
-				%s
-			</span>
-		</div>`, msg.Name, msg.Content)
-		s += post
+		var post bytes.Buffer
+		templ, _ := template.ParseFiles("templates/post.html")
+		templ.Execute(&post, msg)
+
+		s += post.String()
 	}
 
-	return c.HTML(http.StatusOK, "rawr"+nr+"<br>"+s)
+	var thread bytes.Buffer
+	templ, _ := template.ParseFiles("templates/thread.html")
+	templ.Execute(&thread, template.HTML(s))
+
+	return c.HTML(http.StatusOK, thread.String())
 }
 
 func NewPost(c echo.Context) (err error){

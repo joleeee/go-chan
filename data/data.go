@@ -164,8 +164,9 @@ func (m *MDB) GetThreads() []string {
 	return list
 }
 
-func (m *MDB) GetThreadPosts(thread string) []string {
+func (m *MDB) GetThreadPosts(thread string) ([]string, error) {
 	var entr [][]byte
+	var list []string
 	if err := m.db.View(
 		func(tx *nutsdb.Tx) error {
 			bucket := "children"
@@ -177,11 +178,10 @@ func (m *MDB) GetThreadPosts(thread string) []string {
 			}
 			return nil
 		}); err != nil {
-			log.Fatal(err)
+			return list, err
 		}
-	var list []string
 	for _, e := range entr {
 		list = append(list, string(e))
 	}
-	return list
+	return list, nil
 }
