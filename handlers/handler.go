@@ -134,15 +134,35 @@ func NewPost(c echo.Context) (err error){
 		return err
 	}
 
-	url, _ := writeFile(c, id, "file")
+	// get reply id
+	pid, err := strconv.ParseInt(reply, 10, 64)
+	if err != nil {
+		pid = id // it's a thread
+	} else {
+		// it's not a thread, make sure the parent is legit
+		_, err = mdb.GetThreadPosts(reply)
+		if err != nil {
+			return c.String(http.StatusBadRequest, "you can't reply to a nonexistent thread")
+		}
+	}
+
+	// get upload
+	url, err := writeFile(c, id, "file")
+	// threads require upload
+	if pid == id && err != nil {
+		return c.String(http.StatusBadRequest, "threads require an image")
+	}
+
+	if name == "" {
+		name = "Ola"
+	}
+
+	if content == "" {
+		return c.String(http.StatusBadRequest, "you need to say something!")
+	}
 
 	tstr := time.Now().Format("2006-01-02 15:04:05 -0700 MST")
 	msg := data.Message{Subject: subject, Name: name, Content: content, Time: tstr, Url: url}
-	// sanitze, make sure that reply id is a real id
-	pid, err := strconv.ParseInt(reply, 10, 64)
-	if err != nil {
-		pid = id
-	}
 	mdb.NewPost(id,pid,msg)
 
 	ret := fmt.Sprintf("Thread: Creating new thread no%d *%s* by *%s* with content *%s*\n", id, subject, name, content)
