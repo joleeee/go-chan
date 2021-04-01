@@ -1,0 +1,43 @@
+img{
+	max-height: 384px;
+	max-width: 384px;
+}
+body{
+	background-color: #ffe;
+	font-family: arial,helvetica,sans-serif
+}
+.post{
+	background-color: #f0e0d6;
+	border: 2px solid #d9bfb7;
+	padding: 4px 24px 4px 6px;
+	display: table;
+}
+.postcontent{
+	padding-left: 24px;
+	padding-top: 8px;
+	color: maroon;
+}
+.greentext{
+	color: green;
+}
+.pinktext{
+	color: #ca0bca;
+}
+.author{
+	color: rgb(17, 119, 67);
+	font-weight: bold;
+}
+.subject{
+	color: #0f0c5d;
+	font-weight: bold;
+}
+.titlebar{
+	background-color: #f0e8e3;
+	padding: 1px 6px 1px 6px;
+}
+
+.banner{
+	display: block;
+	margin-left: auto;
+	margin-right: auto;
+}
