@@ -39,6 +39,14 @@ func ThreadList(c echo.Context) (err error){
 			return err
 		}
 		s := "<h2>Threadlist</h2>"
+
+		// submit
+		pArgs := postArgs{Id:"", Hide:true}
+		var sub bytes.Buffer
+		temps, _ := template.ParseFiles("templates/upload.html")
+		temps.Execute(&sub, pArgs)
+		s += sub.String()
+
 		for _, e := range oot {
 			id, err := strconv.ParseInt(e, 10, 64)
 			if err != nil {
@@ -66,6 +74,10 @@ func ThreadList(c echo.Context) (err error){
 	}
 }
 
+type postArgs struct {
+	Id string
+	Hide bool
+}
 type threadArgs struct {
 	Id int64
 	Content template.HTML
@@ -84,6 +96,15 @@ func Thread(c echo.Context) (err error){
 	}
 
 	posts := ""
+	// submit
+	pArgs := postArgs{Id:nr, Hide:true}
+	var sub bytes.Buffer
+	temps, _ := template.ParseFiles("templates/upload.html")
+	temps.Execute(&sub, pArgs)
+	posts += sub.String()
+
+
+	// posts
 	for idx, e := range a{
 		id, err := strconv.ParseInt(e, 10, 64)
 		if err != nil {
@@ -191,6 +212,7 @@ func NewPost(c echo.Context) (err error){
 	msg := data.Message{Id: id, ParentId: pid, Subject: subject, Name: name, Content: content, Time: tstr, Url: url}
 	mdb.NewPost(id,pid,msg)
 
-	ret := fmt.Sprintf("Thread: Creating new thread no%d *%s* by *%s* with content *%s*\n", id, subject, name, content)
-	return c.String(http.StatusOK, ret)
+	//ret := fmt.Sprintf("Thread: Creating new thread no%d *%s* by *%s* with content *%s*\n", id, subject, name, content)
+	return c.Redirect(http.StatusSeeOther, "/threads/")
+	//return c.String(http.StatusOK, ret)
 }
