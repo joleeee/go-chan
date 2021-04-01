@@ -213,6 +213,8 @@ func NewPost(c echo.Context) (err error){
 	mdb.NewPost(id,pid,msg)
 
 	//ret := fmt.Sprintf("Thread: Creating new thread no%d *%s* by *%s* with content *%s*\n", id, subject, name, content)
-	return c.Redirect(http.StatusSeeOther, "/threads/")
+	ref := c.Request().Referer()
+	red := fmt.Sprintf("%s#p%d", ref, id)
+	return c.Redirect(http.StatusSeeOther, red)
 	//return c.String(http.StatusOK, ret)
 }
