@@ -33,12 +33,17 @@ func ThreadList(c echo.Context) (err error){
 		if err != nil {
 			return err
 		}
-		s := "threadlist<br>"
+		s := "<h2>threadlist</h2>"
 		for _, e := range oot {
 			s2 := fmt.Sprintf("<a href=\"threads/%s\">%s</a><br>", e, e)
 			s += s2
 		}
-		return c.HTML(http.StatusOK, s)
+
+		var body bytes.Buffer
+		tempb, _ := template.ParseFiles("templates/body.html")
+		tempb.Execute(&body, template.HTML(s))
+
+		return c.HTML(http.StatusOK, body.String())
 	} else if format == "raw" {
 		return c.String(http.StatusOK, "rawr")
 	} else {
@@ -54,7 +59,7 @@ func Thread(c echo.Context) (err error){
 		return c.String(http.StatusNotFound, "not found")
 	}
 
-	s := ""
+	posts := ""
 	for _, e := range a{
 		id, err := strconv.ParseInt(e, 10, 64)
 		if err != nil {
@@ -68,14 +73,18 @@ func Thread(c echo.Context) (err error){
 		templ, _ := template.ParseFiles("templates/post.html")
 		templ.Execute(&post, msg)
 
-		s += post.String()
+		posts += post.String()
 	}
 
 	var thread bytes.Buffer
-	templ, _ := template.ParseFiles("templates/thread.html")
-	templ.Execute(&thread, template.HTML(s))
+	tempt, _ := template.ParseFiles("templates/thread.html")
+	tempt.Execute(&thread, template.HTML(posts))
 
-	return c.HTML(http.StatusOK, thread.String())
+	var body bytes.Buffer
+	tempb, _ := template.ParseFiles("templates/body.html")
+	tempb.Execute(&body, template.HTML(thread.String()))
+
+	return c.HTML(http.StatusOK, body.String())
 }
 
 func writeFile(c echo.Context, id int64, filename string) (string, error){
