@@ -22,7 +22,13 @@ func Init(datab *nutsdb.DB){
 }
 
 func Root(c echo.Context) (err error){
-	return c.String(http.StatusOK, "hello");
+	s := "front page bla bla bla be nice etc<br>recent posts:"
+
+	var body bytes.Buffer
+	tempb, _ := template.ParseFiles("templates/body.html")
+	tempb.Execute(&body, template.HTML(s))
+
+	return c.HTML(http.StatusOK, body.String())
 }
 
 func ThreadList(c echo.Context) (err error){
