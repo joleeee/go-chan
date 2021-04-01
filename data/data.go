@@ -29,7 +29,6 @@ func (m *MDB) GetId() (int64, error) {
 			return err
 		} else {
 			str := string(e.Value)
-			fmt.Println(str)
 
 			var ierr error
 			id, ierr = strconv.ParseInt(str, 10, 64)
@@ -57,7 +56,6 @@ func (m *MDB) GetId() (int64, error) {
 		return -1, err
 	}
 
-	fmt.Println("id is", id)
 	return id, nil
 }
 

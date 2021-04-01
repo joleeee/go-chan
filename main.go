@@ -20,19 +20,6 @@ func main(){
 	}
 	defer db.Close()
 
-	//if err := db.Update(
-		//func(tx *nutsdb.Tx) error {
-			//key := []byte("id")
-			//val := []byte("0")
-			//bucket := "internal"
-			//if err := tx.Put(bucket, key, val, 0); err != nil {
-				//return err
-			//}
-			//return nil
-	//}); err != nil {
-		//panic(1)
-	//}
-
 	mdb := data.New(db)
 	mdb.InitId()
 
@@ -40,7 +27,9 @@ func main(){
 
 	e := echo.New()
 
-	//e.Use(middleware.Logger())
+	e.Use(middleware.LoggerWithConfig(middleware.LoggerConfig{
+		Format: "method=${method}, uri=${uri}, status=${status}\n",
+	}))
 	e.Use(middleware.Recover())
 
 	e.Static("/", "sauce")

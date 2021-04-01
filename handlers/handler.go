@@ -15,14 +15,13 @@ import (
 	"time"
 )
 
-var db *nutsdb.DB
 var mdb data.MDB
 func Init(datab *nutsdb.DB){
 	mdb = data.New(datab)
 }
 
 func Root(c echo.Context) (err error){
-	s := "<h2>NOchan - the front page of the shitternet.</h2>"
+	s := "<h2>NOchan - the front page of the shitternet</h2>"
 
 	var body bytes.Buffer
 	tempb, _ := template.ParseFiles("templates/body.html")
@@ -130,6 +129,9 @@ func writeFile(c echo.Context, id int64, filename string) (string, error){
 	defer src.Close()
 
 	ext := filepath.Ext(file.Filename)
+	// we can actually just change this later because
+	// this not only saves the file, but we also store
+	// where it is saved on the individual Messages
 	idstr := fmt.Sprintf("img/%08d%s", id, ext)
 
 	// write file
