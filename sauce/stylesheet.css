@@ -16,6 +16,7 @@ body{
 	padding-left: 24px;
 	padding-top: 8px;
 	color: maroon;
+	white-space: pre-line;
 }
 .greentext{
 	color: green;
