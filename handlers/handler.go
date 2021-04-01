@@ -12,6 +12,7 @@ import (
 	"github.com/joleeee/go-chan/data"
 	"html/template"
 	"bytes"
+	"time"
 )
 
 var db *nutsdb.DB
@@ -100,7 +101,7 @@ func NewPost(c echo.Context) (err error){
 		return err
 	}
 	ext := filepath.Ext(file.Filename)
-	idstr := fmt.Sprintf("%08d%s", id, ext)
+	idstr := fmt.Sprintf("img/%08d%s", id, ext)
 
 	// write file
 	dst, err := os.Create(idstr)
@@ -113,8 +114,10 @@ func NewPost(c echo.Context) (err error){
 		return err
 	}
 
-	fmt.Println("a")
-	msg := data.Message{Subject: subject, Name: name, Content: content}
+	t := time.Now()
+	tstr := t.Format("2006-01-02 15:04:05 -0700 MST")
+	fmt.Println("time is", tstr)
+	msg := data.Message{Subject: subject, Name: name, Content: content, Time: tstr, Url: "/"+idstr}
 	// sanitze, make sure that reply id is a real id
 	pid, err := strconv.ParseInt(reply, 10, 64)
 	if err != nil {

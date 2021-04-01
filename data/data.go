@@ -99,6 +99,8 @@ type Message struct {
 	Name string
 	Subject string
 	Content string
+	Time string
+	Url string
 }
 
 func (m *MDB) message(id int64, parent int64, msg Message) error{
