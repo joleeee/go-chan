@@ -1,4 +1,4 @@
-module mymodule
+module github.com/joleeee/go-chan
 
 go 1.16
 
