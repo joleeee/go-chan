@@ -61,6 +61,40 @@ func (m *MDB) GetId() int64{
 	return id
 }
 
+func (m *MDB) InitId() error {
+	// get id
+	err := m.db.View(
+		func(tx *nutsdb.Tx) error{
+			key := []byte("id")
+			bucket := "internal"
+			_, err := tx.Get(bucket, key)
+			return err
+		})
+
+	// no error, id exists
+	if err == nil {
+		return nil
+	}
+
+	// error, set id=0
+	fmt.Println("No id found, resetting it") // ask for confirmation?
+	if err := m.db.Update(
+		func(tx *nutsdb.Tx) error {
+			key := []byte("id")
+			str := fmt.Sprintf("%d", 0)
+			val := []byte(str)
+			bucket := "internal"
+			if err := tx.Put(bucket, key, val, 0); err != nil {
+				return err
+			}
+			return nil
+	}); err != nil {
+		log.Fatal(err)
+	}
+
+	return nil
+}
+
 type Message struct {
 	Name string
 	Subject string
