@@ -13,6 +13,8 @@ import (
 	"html/template"
 	"bytes"
 	"time"
+	"bufio"
+	"strings"
 )
 
 var mdb data.MDB
@@ -84,7 +86,7 @@ type threadArgs struct {
 }
 func Thread(c echo.Context) (err error){
 	nr := c.Param("data")
-	id, err := strconv.ParseInt(nr, 10, 64)
+	rootid, err := strconv.ParseInt(nr, 10, 64)
 	if err != nil {
 		// shouldn't happen
 		return err
@@ -123,12 +125,46 @@ func Thread(c echo.Context) (err error){
 
 		templ.Execute(&post, msg)
 
-		posts += post.String()
+		match := ""
+		scanner := bufio.NewScanner(strings.NewReader(post.String()))
+		for scanner.Scan() {
+			text := scanner.Text()
+			// because text starts on the same line we have to remove the div
+			// sketchy but works for now
+			if strings.HasPrefix(text, `	<div class="postcontent">`){
+				match += `	<div class="postcontent">`
+				text = text[len(`	<div class="postcontent">`):]
+				fmt.Println(text)
+			}
+
+			if text == fmt.Sprintf("\n") {
+				continue
+			}
+			if strings.HasPrefix(text, "&gt;&gt;"){
+				rest := text[8:]
+				id, err := strconv.ParseInt(rest, 10, 64)
+				if err == nil {
+					pre := fmt.Sprintf(`<a href="%d#p%d">`, rootid, id)
+					post := `</a>`
+					match += pre + text+"\n" + post
+					continue
+				}
+			}
+			if strings.HasPrefix(text, "&gt;"){
+				pre := `<span class="greentext">`
+				post := `</span>`
+				match += pre + text+"\n" + post
+				continue
+			}
+			match += text+"\n"
+		}
+
+		posts += match
 	}
 
 	var thread bytes.Buffer
 	tempt, _ := template.ParseFiles("templates/thread.html")
-	tempt.Execute(&thread, threadArgs{Id:id, Content:template.HTML(posts)})
+	tempt.Execute(&thread, threadArgs{Id:rootid, Content:template.HTML(posts)})
 
 	var body bytes.Buffer
 	tempb, _ := template.ParseFiles("templates/body.html")
