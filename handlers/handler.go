@@ -134,12 +134,8 @@ func Thread(c echo.Context) (err error){
 			if strings.HasPrefix(text, `	<div class="postcontent">`){
 				match += `	<div class="postcontent">`
 				text = text[len(`	<div class="postcontent">`):]
-				fmt.Println(text)
 			}
 
-			if text == fmt.Sprintf("\n") {
-				continue
-			}
 			if strings.HasPrefix(text, "&gt;&gt;"){
 				rest := text[8:]
 				id, err := strconv.ParseInt(rest, 10, 64)
