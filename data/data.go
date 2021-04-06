@@ -7,6 +7,8 @@ import (
 	"strconv"
 	"bytes"
 	"encoding/gob"
+	"html/template"
+	"html"
 )
 
 type MDB struct{
@@ -101,6 +103,27 @@ type Message struct {
 	Content string
 	Time string
 	Url string
+}
+
+type EscapedMessage struct {
+	Id int64
+	ParentId int64
+	Name string
+	Subject string
+	Content template.HTML
+	Time string
+	Url string
+}
+
+func (msg *Message) Escaped() EscapedMessage {
+	esc := template.HTML(html.EscapeString(msg.Content))
+	return EscapedMessage{Id:msg.Id,
+		ParentId:msg.ParentId,
+		Name:msg.Name,
+		Subject:msg.Subject,
+		Content:esc,
+		Time:msg.Time,
+		Url:msg.Url}
 }
 
 func (m *MDB) message(id int64, parent int64, msg Message) error{

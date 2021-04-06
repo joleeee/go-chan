@@ -105,57 +105,47 @@ func Thread(c echo.Context) (err error){
 	temps.Execute(&sub, pArgs)
 	posts += sub.String()
 
-
 	// posts
-	for idx, e := range a{
+	for _, e := range a{
 		id, err := strconv.ParseInt(e, 10, 64)
 		if err != nil {
 			return err
 		}
-		msg, err := mdb.GetPost(id)
-		if err != nil{
+		rmsg, err := mdb.GetPost(id)
+		if err != nil {
 			return err
 		}
-		var post bytes.Buffer
-		templ, _ := template.ParseFiles("templates/post.html")
-		idlink := nr
-		if idx > 0 {
-			idlink += "#p"+fmt.Sprintf("%d",id)
-		}
+		msg := rmsg.Escaped()
 
-		templ.Execute(&post, msg)
-
-		match := ""
-		scanner := bufio.NewScanner(strings.NewReader(post.String()))
-		for scanner.Scan() {
-			text := scanner.Text()
-			// because text starts on the same line we have to remove the div
-			// sketchy but works for now
-			if strings.HasPrefix(text, `	<div class="postcontent">`){
-				match += `	<div class="postcontent">`
-				text = text[len(`	<div class="postcontent">`):]
+		scan := bufio.NewScanner(strings.NewReader(string(msg.Content)))
+		out := ""
+		for scan.Scan() {
+			if out != "" {
+				out += "\n"
 			}
-
-			if strings.HasPrefix(text, "&gt;&gt;"){
-				rest := text[8:]
-				id, err := strconv.ParseInt(rest, 10, 64)
-				if err == nil {
-					pre := fmt.Sprintf(`<a href="%d#p%d">`, rootid, id)
-					post := `</a>`
-					match += pre + text+"\n" + post
+			text := scan.Text()
+			if strings.HasPrefix(text, "&gt;&gt;") {
+				rest := text[len("&gt;&gt;"):]
+				id, e := strconv.ParseInt(rest, 10, 64)
+				if e == nil {
+					out += fmt.Sprintf(`<a href="%d#p%d">%s</a>`, rootid, id, text)
 					continue
 				}
 			}
-			if strings.HasPrefix(text, "&gt;"){
-				pre := `<span class="greentext">`
-				post := `</span>`
-				match += pre + text+"\n" + post
+			if strings.HasPrefix(text, "&gt;") {
+				out += fmt.Sprintf(`<span class="greentext">%s</span>`, text)
 				continue
 			}
-			match += text+"\n"
+			out += text
 		}
+		msg.Content = template.HTML(out)
 
-		posts += match
+		var post bytes.Buffer
+		templ, _ := template.ParseFiles("templates/post.html")
+
+		templ.Execute(&post, msg)
+
+		posts += post.String()
 	}
 
 	var thread bytes.Buffer
