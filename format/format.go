@@ -10,7 +10,7 @@ import (
 	"bytes"
 )
 
-func FormatPost(rmsg *data.Message, rootid int64) string {
+func FormatPost(rmsg *data.Message) string {
 	msg := rmsg.Escaped()
 
 	scan := bufio.NewScanner(strings.NewReader(string(msg.Content)))
@@ -24,7 +24,8 @@ func FormatPost(rmsg *data.Message, rootid int64) string {
 			rest := text[len("&gt;&gt;"):]
 			id, e := strconv.ParseInt(rest, 10, 64)
 			if e == nil {
-				out += fmt.Sprintf(`<a href="%d#p%d">%s</a>`, rootid, id, text)
+				// msg.ParentId doesn't work with crossposting...
+				out += fmt.Sprintf(`<a href="%d#p%d">%s</a>`, msg.ParentId, id, text)
 				continue
 			}
 		}

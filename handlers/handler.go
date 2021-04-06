@@ -58,7 +58,7 @@ func ThreadList(c echo.Context) (err error){
 				continue
 			}
 
-			emsg := format.FormatPost(&rmsg, -1) // -1 temp val...
+			emsg := format.FormatPost(&rmsg)
 
 			s += emsg
 		}
@@ -115,7 +115,7 @@ func Thread(c echo.Context) (err error){
 			continue
 		}
 
-		emsg := format.FormatPost(&rmsg, rootid)
+		emsg := format.FormatPost(&rmsg)
 		posts += emsg
 	}
 
