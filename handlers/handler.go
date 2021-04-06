@@ -13,8 +13,7 @@ import (
 	"html/template"
 	"bytes"
 	"time"
-	"bufio"
-	"strings"
+	"github.com/joleeee/go-chan/format"
 )
 
 var mdb data.MDB
@@ -33,9 +32,9 @@ func Root(c echo.Context) (err error){
 }
 
 func ThreadList(c echo.Context) (err error){
-	format := c.QueryParam("format")
+	fmat := c.QueryParam("format")
 
-	if format == "" {
+	if fmat == "" {
 		oot, err := mdb.GetThreads()
 		if err != nil {
 			return err
@@ -52,16 +51,16 @@ func ThreadList(c echo.Context) (err error){
 		for _, e := range oot {
 			id, err := strconv.ParseInt(e, 10, 64)
 			if err != nil {
-				// this should never happen!
-				return err
+				continue
 			}
-			msg, err := mdb.GetPost(id)
+			rmsg, err := mdb.GetPost(id)
+			if err != nil {
+				continue
+			}
 
-			var post bytes.Buffer
-			templ, _ := template.ParseFiles("templates/post.html")
-			templ.Execute(&post, msg)
+			emsg := format.FormatPost(&rmsg, -1) // -1 temp val...
 
-			s += post.String()
+			s += emsg
 		}
 
 		var body bytes.Buffer
@@ -69,10 +68,10 @@ func ThreadList(c echo.Context) (err error){
 		tempb.Execute(&body, template.HTML(s))
 
 		return c.HTML(http.StatusOK, body.String())
-	} else if format == "raw" {
+	} else if fmat == "raw" {
 		return c.String(http.StatusOK, "rawr")
 	} else {
-		return c.String(http.StatusBadRequest, "format unrecognized\n")
+		return c.String(http.StatusBadRequest, "fmat unrecognized\n")
 	}
 }
 
@@ -109,43 +108,15 @@ func Thread(c echo.Context) (err error){
 	for _, e := range a{
 		id, err := strconv.ParseInt(e, 10, 64)
 		if err != nil {
-			return err
+			continue
 		}
 		rmsg, err := mdb.GetPost(id)
 		if err != nil {
-			return err
+			continue
 		}
-		msg := rmsg.Escaped()
 
-		scan := bufio.NewScanner(strings.NewReader(string(msg.Content)))
-		out := ""
-		for scan.Scan() {
-			if out != "" {
-				out += "\n"
-			}
-			text := scan.Text()
-			if strings.HasPrefix(text, "&gt;&gt;") {
-				rest := text[len("&gt;&gt;"):]
-				id, e := strconv.ParseInt(rest, 10, 64)
-				if e == nil {
-					out += fmt.Sprintf(`<a href="%d#p%d">%s</a>`, rootid, id, text)
-					continue
-				}
-			}
-			if strings.HasPrefix(text, "&gt;") {
-				out += fmt.Sprintf(`<span class="greentext">%s</span>`, text)
-				continue
-			}
-			out += text
-		}
-		msg.Content = template.HTML(out)
-
-		var post bytes.Buffer
-		templ, _ := template.ParseFiles("templates/post.html")
-
-		templ.Execute(&post, msg)
-
-		posts += post.String()
+		emsg := format.FormatPost(&rmsg, rootid)
+		posts += emsg
 	}
 
 	var thread bytes.Buffer
