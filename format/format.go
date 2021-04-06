@@ -32,6 +32,10 @@ func FormatPost(rmsg *data.Message, rootid int64) string {
 			out += fmt.Sprintf(`<span class="greentext">%s</span>`, text)
 			continue
 		}
+		if strings.HasPrefix(text, "&lt;") {
+			out += fmt.Sprintf(`<span class="pinktext">%s</span>`, text)
+			continue
+		}
 		out += text
 	}
 	msg.Content = template.HTML(out)
