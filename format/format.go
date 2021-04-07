@@ -8,6 +8,7 @@ import (
 	"strconv"
 	"html/template"
 	"bytes"
+	"path/filepath"
 )
 
 func FormatPost(rmsg *data.Message) string {
@@ -41,9 +42,26 @@ func FormatPost(rmsg *data.Message) string {
 	}
 	msg.Content = template.HTML(out)
 
-	var post bytes.Buffer
-	templ, _ := template.ParseFiles("templates/post.html")
+	tf := template.FuncMap{
+		"isImg": func(i interface{}) bool {
+			if str, ok := i.(string); ok {
+				ext := filepath.Ext(str)
+				return ext==".jpg" || ext==".jpeg" || ext==".png" || ext==".webp"
+			}
+			return false
+		},
+		"isVid": func(i interface{}) bool {
+			if str, ok := i.(string); ok {
+				ext := filepath.Ext(str)
+				return ext==".webm" || ext==".mp4" || ext==".mkv"
+			}
+			return false
+		},
+	}
 
+	templ, _ := template.New("post.html").Funcs(tf).ParseFiles("templates/post.html")
+
+	var post bytes.Buffer
 	templ.Execute(&post, msg)
 
 	return post.String()

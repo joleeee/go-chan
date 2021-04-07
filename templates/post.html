@@ -8,9 +8,17 @@
 		<a href="{{.ParentId}}#p{{.Id}}"><span class="id">{{printf "%d" .Id}}</span></a>
 	</span>
 	<br>
+	{{ if .Url }}
+	{{ if isImg .Url }}
 	<a href="{{.Url}}">
 		<img src="{{.Url}}">
 	</a>
+	{{ else if isVid .Url }}
+	<video controls>
+		<source src="{{.Url}}">
+	</a>
+	{{ end }}
+	{{ end }}
 	<div class="postcontent">{{.Content}}<br>
 	</div>
 </div>
