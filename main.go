@@ -1,24 +1,13 @@
 package main
 
 import (
-	"log"
 	"github.com/labstack/echo"
 	"github.com/labstack/echo/middleware"
-
-	"github.com/xujiajun/nutsdb"
 
 	"github.com/joleeee/go-chan/handlers"
 )
 
 func main(){
-	opt := nutsdb.DefaultOptions
-	opt.Dir = "chandb"
-	db, err := nutsdb.Open(opt)
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer db.Close()
-
 	handlers.Init("chandb")
 
 	e := echo.New()

@@ -40,7 +40,7 @@ type MDB struct{
 
 func NewNuts(name string) Database{
 	opt := nutsdb.DefaultOptions
-	opt.Dir = "chandb"
+	opt.Dir = name + "-nuts"
 	db, err := nutsdb.Open(opt)
 	if err != nil {
 		log.Fatal(err)
