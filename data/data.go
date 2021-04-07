@@ -9,6 +9,7 @@ import (
 	"encoding/gob"
 	"html/template"
 	"html"
+	"sort"
 )
 
 type MDB struct{
@@ -237,6 +238,7 @@ func (m *MDB) GetThreads() ([]string, error) {
 	for _, e := range entr {
 		list = append(list, string(e))
 	}
+	sort.Sort(sort.Reverse(sort.StringSlice(list)))
 	return list, nil
 }
 
