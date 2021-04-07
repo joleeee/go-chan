@@ -16,7 +16,7 @@ import (
 	"github.com/joleeee/go-chan/format"
 )
 
-var mdb data.MDB
+var mdb data.Database
 func Init(datab *nutsdb.DB){
 	mdb = data.New(datab)
 }

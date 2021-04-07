@@ -12,12 +12,36 @@ import (
 	"sort"
 )
 
+type Database interface {
+	// initilizes db, creates if doesn't exist
+	InitId() error
+
+	// returns id that new post will be
+	GetId() (int64, error)
+
+	// creates new post
+	NewPost(int64, int64, Message) error
+
+	// returns post by id
+	GetPost(int64) (Message, error)
+
+	// returns list of thread ids
+	//GetThreadIds() ([]int64, error)
+	GetThreads() ([]string, error)
+
+	// returns list of ids of posts in thread
+	//GetThreadPosts() ([]int64, error)
+	GetThreadPosts(string) ([]string, error)
+}
+
 type MDB struct{
 	db *nutsdb.DB
 }
 
-func New(db *nutsdb.DB) MDB{
-	return MDB{db:db}
+func New(db *nutsdb.DB) Database{
+	mdb := MDB{db:db}
+	var iface Database = &mdb
+	return iface
 }
 
 func (m *MDB) GetId() (int64, error) {
