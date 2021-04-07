@@ -34,11 +34,11 @@ type Database interface {
 	GetThreadPosts(int64) ([]int64, error)
 }
 
-type MDB struct{
+type MDB struct {
 	db *nutsdb.DB
 }
 
-func NewNuts(name string) Database{
+func NewNuts(name string) Database {
 	opt := nutsdb.DefaultOptions
 	opt.Dir = name + "-nuts"
 	db, err := nutsdb.Open(opt)
