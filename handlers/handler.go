@@ -48,11 +48,7 @@ func ThreadList(c echo.Context) (err error){
 		temps.Execute(&sub, pArgs)
 		s += sub.String()
 
-		for _, e := range oot {
-			id, err := strconv.ParseInt(e, 10, 64)
-			if err != nil {
-				continue
-			}
+		for _, id := range oot {
 			rmsg, err := mdb.GetPost(id)
 			if err != nil {
 				continue
@@ -105,11 +101,7 @@ func Thread(c echo.Context) (err error){
 	posts += sub.String()
 
 	// posts
-	for _, e := range a{
-		id, err := strconv.ParseInt(e, 10, 64)
-		if err != nil {
-			continue
-		}
+	for _, id := range a{
 		rmsg, err := mdb.GetPost(id)
 		if err != nil {
 			continue

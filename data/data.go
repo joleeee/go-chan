@@ -27,11 +27,11 @@ type Database interface {
 
 	// returns list of thread ids
 	//GetThreadIds() ([]int64, error)
-	GetThreads() ([]string, error)
+	GetThreads() ([]int64, error)
 
 	// returns list of ids of posts in thread
 	//GetThreadPosts() ([]int64, error)
-	GetThreadPosts(string) ([]string, error)
+	GetThreadPosts(string) ([]int64, error)
 }
 
 type MDB struct{
@@ -242,9 +242,9 @@ func (m *MDB) thread(id int64) error {
 	return nil
 }
 
-func (m *MDB) GetThreads() ([]string, error) {
+func (m *MDB) GetThreads() ([]int64, error) {
 	var entr [][]byte
-	var list []string
+	var list []int64
 	if err := m.db.View(
 		func(tx *nutsdb.Tx) error {
 			bucket := "threads"
@@ -260,15 +260,18 @@ func (m *MDB) GetThreads() ([]string, error) {
 			return list, err
 		}
 	for _, e := range entr {
-		list = append(list, string(e))
+		i, e := strconv.ParseInt(string(e), 10, 64)
+		if e == nil {
+			list = append(list, i)
+		}
 	}
-	sort.Sort(sort.Reverse(sort.StringSlice(list)))
+	sort.Slice(list, func(i, j int) bool { return list[i] < list[j] })
 	return list, nil
 }
 
-func (m *MDB) GetThreadPosts(thread string) ([]string, error) {
+func (m *MDB) GetThreadPosts(thread string) ([]int64, error) {
 	var entr [][]byte
-	var list []string
+	var list []int64
 	if err := m.db.View(
 		func(tx *nutsdb.Tx) error {
 			bucket := "children"
@@ -283,7 +286,10 @@ func (m *MDB) GetThreadPosts(thread string) ([]string, error) {
 			return list, err
 		}
 	for _, e := range entr {
-		list = append(list, string(e))
+		i, e := strconv.ParseInt(string(e), 10, 64)
+		if e == nil {
+			list = append(list, i)
+		}
 	}
 	return list, nil
 }
