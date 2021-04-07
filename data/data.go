@@ -1,7 +1,6 @@
 package data
 
 import (
-	"github.com/xujiajun/nutsdb"
 	"fmt"
 	"log"
 	"strconv"
@@ -10,6 +9,8 @@ import (
 	"html/template"
 	"html"
 	"sort"
+
+	"github.com/xujiajun/nutsdb"
 )
 
 type Database interface {
@@ -30,15 +31,21 @@ type Database interface {
 	GetThreads() ([]int64, error)
 
 	// returns list of ids of posts in thread
-	//GetThreadPosts() ([]int64, error)
-	GetThreadPosts(string) ([]int64, error)
+	GetThreadPosts(int64) ([]int64, error)
 }
 
 type MDB struct{
 	db *nutsdb.DB
 }
 
-func New(db *nutsdb.DB) Database{
+func NewNuts(name string) Database{
+	opt := nutsdb.DefaultOptions
+	opt.Dir = "chandb"
+	db, err := nutsdb.Open(opt)
+	if err != nil {
+		log.Fatal(err)
+	}
+
 	mdb := MDB{db:db}
 	var iface Database = &mdb
 	return iface
@@ -269,13 +276,13 @@ func (m *MDB) GetThreads() ([]int64, error) {
 	return list, nil
 }
 
-func (m *MDB) GetThreadPosts(thread string) ([]int64, error) {
+func (m *MDB) GetThreadPosts(thread int64) ([]int64, error) {
 	var entr [][]byte
 	var list []int64
 	if err := m.db.View(
 		func(tx *nutsdb.Tx) error {
 			bucket := "children"
-			key := []byte("thread_"+thread)
+			key := []byte("thread_"+fmt.Sprintf("%d", thread))
 			if items, err := tx.LRange(bucket, key, 0, -1); err != nil {
 				return err
 			} else {

@@ -4,21 +4,22 @@ import (
 	"os"
 	"io"
 	"path/filepath"
-	"github.com/labstack/echo"
-	"github.com/xujiajun/nutsdb"
 	"net/http"
 	"fmt"
 	"strconv"
-	"github.com/joleeee/go-chan/data"
 	"html/template"
 	"bytes"
 	"time"
+
+	"github.com/labstack/echo"
+
 	"github.com/joleeee/go-chan/format"
+	"github.com/joleeee/go-chan/data"
 )
 
 var mdb data.Database
-func Init(datab *nutsdb.DB){
-	mdb = data.New(datab)
+func Init(name string){
+	mdb = data.NewNuts(name)
 }
 
 func Root(c echo.Context) (err error){
@@ -87,7 +88,7 @@ func Thread(c echo.Context) (err error){
 		return err
 	}
 
-	a, err := mdb.GetThreadPosts(nr)
+	a, err := mdb.GetThreadPosts(rootid)
 	if err != nil {
 		return c.String(http.StatusNotFound, "not found")
 	}
@@ -172,7 +173,7 @@ func NewPost(c echo.Context) (err error){
 		pid = id // it's a thread
 	} else {
 		// it's not a thread, make sure the parent is legit
-		_, err = mdb.GetThreadPosts(reply)
+		_, err = mdb.GetThreadPosts(pid)
 		if err != nil {
 			return c.String(http.StatusBadRequest, "you can't reply to a nonexistent thread")
 		}

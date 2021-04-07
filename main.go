@@ -8,7 +8,6 @@ import (
 	"github.com/xujiajun/nutsdb"
 
 	"github.com/joleeee/go-chan/handlers"
-	"github.com/joleeee/go-chan/data"
 )
 
 func main(){
@@ -20,10 +19,7 @@ func main(){
 	}
 	defer db.Close()
 
-	mdb := data.New(db)
-	mdb.InitId()
-
-	handlers.Init(db)
+	handlers.Init("chandb")
 
 	e := echo.New()
 
