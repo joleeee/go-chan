@@ -1,6 +1,8 @@
 package main
 
 import (
+	"log"
+
 	"github.com/labstack/echo"
 	"github.com/labstack/echo/middleware"
 
@@ -8,12 +10,13 @@ import (
 )
 
 func main(){
+	log.SetFlags(log.Ltime | log.Lshortfile)
 	handlers.Init("chandb")
 
 	e := echo.New()
 
 	e.Use(middleware.LoggerWithConfig(middleware.LoggerConfig{
-		Format: "method=${method}, uri=${uri}, status=${status}\n",
+		Format: "method=${method}, uri=${uri}, status=${status}, rip=${remote_ip}\n",
 	}))
 	e.Use(middleware.Recover())
 
